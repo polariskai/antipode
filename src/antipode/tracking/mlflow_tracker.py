@@ -20,7 +20,7 @@ class SimpleConfig:
     class mlflow:
         tracking_uri = "databricks"
         # Use absolute path for Databricks experiment, with env var fallback
-        experiment_name = os.getenv("MLFLOW_EXPERIMENT_NAME", "/Users/mohammed.roondiwala@gmail.com/regulon_adv_agents")
+        experiment_name = os.getenv("MLFLOW_EXPERIMENT_NAME", "/Users/mohammed.roondiwala@gmail.com/antipode_adv_agents")
         run_name_prefix = "aml-scenario"
         enable_system_metrics = True
         enable_autologging = True

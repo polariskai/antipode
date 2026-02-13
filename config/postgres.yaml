@@ -1,0 +1,70 @@
+# PostgreSQL Configuration for AWS RDS
+#
+# Setup Instructions:
+# 1. Create RDS PostgreSQL instance in AWS Console
+# 2. Update connection details below
+# 3. Set environment variables for sensitive data:
+#    - POSTGRES_PASSWORD
+#    - POSTGRES_HOST (optional, for different environments)
+
+postgres:
+  # Connection settings
+  host: "${POSTGRES_HOST:-your-rds-instance.region.rds.amazonaws.com}"
+  port: 5432
+  database: "aml_adversarial"
+  user: "aml_app_user"
+  password: "${POSTGRES_PASSWORD}"  # Set via environment variable
+
+  # Connection pool settings (using SQLAlchemy)
+  pool_size: 10  # Number of connections to maintain
+  max_overflow: 20  # Maximum overflow connections
+  pool_timeout: 30  # Timeout for getting connection from pool
+  pool_recycle: 3600  # Recycle connections after 1 hour
+
+  # SSL settings (required for AWS RDS)
+  ssl_mode: "require"  # require, verify-ca, or verify-full
+  ssl_cert_path: null  # Path to SSL certificate (optional)
+
+  # Query settings
+  statement_timeout: 30000  # 30 seconds
+  query_timeout: 60000  # 60 seconds
+
+  # Schema settings
+  schema: "public"
+
+  # Logging
+  echo: false  # Set to true to log all SQL statements
+  echo_pool: false  # Set to true to log connection pool events
+
+# Environment-specific overrides
+environments:
+  development:
+    host: "localhost"
+    database: "aml_adversarial_dev"
+    echo: true
+
+  staging:
+    host: "${POSTGRES_HOST_STAGING}"
+    database: "aml_adversarial_staging"
+    pool_size: 5
+
+  production:
+    host: "${POSTGRES_HOST_PROD}"
+    database: "aml_adversarial_prod"
+    pool_size: 20
+    max_overflow: 40
+    ssl_mode: "verify-full"
+
+# Batch insert settings
+batch:
+  chunk_size: 1000  # Number of rows per batch insert
+  use_copy: true  # Use COPY for bulk inserts (faster)
+
+# Retry settings for transient failures
+retry:
+  max_attempts: 3
+  backoff_factor: 2  # Exponential backoff: 1s, 2s, 4s
+  retryable_errors:
+    - "connection timeout"
+    - "could not connect to server"
+    - "the database system is starting up"

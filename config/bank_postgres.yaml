@@ -1,0 +1,70 @@
+# Bank PostgreSQL Configuration
+# AWS RDS PostgreSQL connection settings for banking schema
+#
+# IMPORTANT: Replace YOUR_PASSWORD_HERE with your actual database password
+# Or set the BANK_POSTGRES_PASSWORD environment variable
+
+# Default connection settings (can be overridden per environment)
+default:
+  host: "${POSTGRES_HOST:-your-rds-instance.region.rds.amazonaws.com}"
+  port: 5432
+  database: "postgres"
+  username: "postgres"
+  password: "${BANK_POSTGRES_PASSWORD}"  # Set via environment variable
+
+  # Connection pool settings
+  pool_size: 10
+  max_overflow: 20
+  pool_timeout: 30
+  pool_recycle: 3600  # Recycle connections after 1 hour
+
+  # SSL settings for AWS RDS
+  ssl_mode: "require"  # Options: disable, allow, prefer, require, verify-ca, verify-full
+  ssl_root_cert: null  # Path to AWS RDS CA certificate (optional for require mode)
+
+  # Batch insert settings
+  batch_size: 1000
+  use_copy: false  # Use COPY for bulk inserts (faster but less flexible)
+
+  # Retry settings
+  max_retries: 3
+  retry_delay: 1.0  # seconds
+
+# Environment-specific overrides
+environments:
+  development:
+    database: "postgres"
+    pool_size: 5
+    max_overflow: 10
+    ssl_mode: "require"
+
+  staging:
+    database: "antipode_staging"
+    pool_size: 10
+    max_overflow: 20
+    ssl_mode: "require"
+
+  production:
+    database: "postgres"
+    pool_size: 20
+    max_overflow: 40
+    ssl_mode: "require"
+    # For production, consider using verify-full with RDS CA cert
+    # ssl_mode: "verify-full"
+    # ssl_root_cert: "/path/to/rds-ca-2019-root.pem"
+
+# Schema settings
+schema:
+  # Main schema file location
+  ddl_file: "sql/bank_schema.sql"
+
+  # Table prefixes (if any)
+  table_prefix: ""
+
+  # Ground truth column prefix (for synthetic data labels)
+  ground_truth_prefix: "_"
+
+# Logging
+logging:
+  log_queries: false  # Set to true for debugging
+  log_level: "INFO"
