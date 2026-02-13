@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Data output
+data/synthetic*/
+output/
+*.csv
+*.json
+!docs/*.json
+
+# Environment
+.env
+.env.local
+config/config.yaml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Neo4j
+neo4j_data/

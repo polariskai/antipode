@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "antipode"
+version = "0.1.0"
+description = "Adversarial agent system for generating end-to-end synthetic banking data to test AML AI agent swarms"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "PolarisKAI"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Topic :: Office/Business :: Financial",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "faker>=20.0",
+    "pydantic>=2.0",
+    "openai>=1.0",
+    "python-dotenv>=1.0",
+    "mlflow>=2.10",
+    "loguru>=0.7",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+graph = [
+    "neo4j>=5.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-asyncio>=0.21",
+    "ruff>=0.1.0",
+    "mypy>=1.0",
+]
+
+[project.scripts]
+antipode-generate = "antipode.data.aml_data_generator:generate_sample_dataset"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+asyncio_mode = "auto"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
