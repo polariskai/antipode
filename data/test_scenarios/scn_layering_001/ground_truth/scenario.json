@@ -1,0 +1,46 @@
+{
+  "scenario_plan": {
+    "scenario_id": "scn_layering_001",
+    "typology": "layering",
+    "reuse_entities": [],
+    "num_new_entities": 5,
+    "num_accounts": 4,
+    "num_transactions": 12,
+    "complexity": 7,
+    "steps": [
+      "1. Originator deposits $500,000 into shell company A (UK jurisdiction)",
+      "2. Shell A transfers $150,000 to shell B (Singapore jurisdiction) as 'consulting fees'",
+      "3. Shell B sends $100,000 to shell C (Panama jurisdiction) as 'investment management'",
+      "4. Shell C transfers $50,000 to shell A in multiple structured $8,000 transactions",
+      "5. Shell A reclassifies funds as 'dividends' to shell D (BVI jurisdiction)",
+      "6. Shell D purchases $120,000 in cryptocurrency through an offshore exchange",
+      "7. Cryptocurrency transferred to shell E (Delaware, USA) via obfuscated wallet addresses",
+      "8. Final integration: Shell E invests $330,000 in a legitimate UK import/export business"
+    ],
+    "evasion_techniques": [
+      "Multi-jurisdictional layering",
+      "Structured transactions below reporting thresholds",
+      "Overlapping payment chains",
+      "Cryptocurrency conversion",
+      "False invoicing documentation"
+    ]
+  },
+  "all_suspicious": true,
+  "typology": "layering",
+  "total_amount": 548962.1,
+  "entity_ids": [
+    "ENT_edef0a68dfb3",
+    "ENT_51122ad98e66",
+    "ENT_22272ecc6e1d",
+    "ENT_ce4cf1f7bd1a",
+    "ENT_33e994aadd76"
+  ],
+  "transaction_ids": [
+    "TXN_a6b298d9a155",
+    "TXN_f8fca8b80543",
+    "TXN_59ba3d8fd1e7",
+    "TXN_aeaa98dec645",
+    "TXN_de7925229b72",
+    "TXN_1385667b77d9"
+  ]
+}

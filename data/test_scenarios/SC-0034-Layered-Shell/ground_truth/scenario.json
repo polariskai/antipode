@@ -1,0 +1,52 @@
+{
+  "scenario_plan": {
+    "scenario_id": "SC-0034-Layered-Shell",
+    "typology": "shell_company",
+    "reuse_entities": [],
+    "num_new_entities": 3,
+    "num_accounts": 3,
+    "num_transactions": 12,
+    "complexity": 8,
+    "steps": [
+      "1. Establish a front company in British Virgin Islands specializing in 'investment consulting'.",
+      "2. Create a dummy shell company in Delaware (US) to act as a 'supplier' for the front company.",
+      "3. Open corporate bank accounts for both companies in different jurisdictions to maintain separation.",
+      "4. Instruct the front company to issue fake invoices to a third shell company in Panama for 'consulting services'.",
+      "5. Direct the original illicit funds to the third shell's account via multi-jurisdictional transfers.",
+      "6. Move funds from the third shell through the Delaware supplier to the BVI front company using staggered wire transfers.",
+      "7. Convert final funds into cryptocurrency through a crypto exchange (pretending it is investment proceeds).",
+      "8. Use crypto mixing services to anonymize digital assets before converting back to fiat currency.",
+      "9. Reinvest 'cleaned' funds into legitimate real estate under the front company's name.",
+      "10. Withdraw equity from real estate via staged sales to offshore trusts."
+    ],
+    "evasion_techniques": [
+      "Multi-jurisdictional shell company layers",
+      "Cryptocurrency conversion with mixing services",
+      "Fictitious trade documentation",
+      "Non-resident corporate bank accounts",
+      "False invoicing between affiliated shells"
+    ]
+  },
+  "all_suspicious": true,
+  "typology": "shell_company",
+  "total_amount": 132869.24,
+  "entity_ids": [
+    "ENT_e61ce3e2ad11",
+    "ENT_76cc70ee291c",
+    "ENT_c02669f36897"
+  ],
+  "transaction_ids": [
+    "TXN_d289092dd8d4",
+    "TXN_355bcdb1ef78",
+    "TXN_b8decdc41dd1",
+    "TXN_dabd4bbac740",
+    "TXN_c24bd9519dcf",
+    "TXN_cb08bda01e27",
+    "TXN_fe8378abcd3d",
+    "TXN_7871392e701b",
+    "TXN_4c5ddd4f5098",
+    "TXN_8367175c6db3",
+    "TXN_6f6b44b82a66",
+    "TXN_437afa4e3c87"
+  ]
+}

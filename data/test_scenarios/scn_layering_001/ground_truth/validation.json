@@ -1,0 +1,20 @@
+{
+  "is_valid": true,
+  "is_realistic": false,
+  "detection_difficulty": 0.3,
+  "issues": [
+    "Layering typically requires more transactions (6 is low for 15 accounts)",
+    "Transaction count (6) insufficient to create complex layering structure",
+    "Total amount ($548,962.10) with few transactions risks triggering reporting thresholds",
+    "No geographic jurisdiction details provided for entities/accounts",
+    "Entity-to-account ratio (5:15) may be unrealistic without shell company structure"
+  ],
+  "suggestions": [
+    "Add 10-15 more transactions to create proper layering complexity",
+    "Specify geographic jurisdictions for different account tiers",
+    "Break large amounts into smaller transactions below reporting thresholds",
+    "Add shell company entities to explain account ownership structure",
+    "Include transaction timing details to show temporal progression"
+  ],
+  "confidence": 0.75
+}

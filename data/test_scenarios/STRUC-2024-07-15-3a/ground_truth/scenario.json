@@ -1,0 +1,50 @@
+{
+  "scenario_plan": {
+    "scenario_id": "STRUC-2024-07-15-3a",
+    "typology": "structuring",
+    "reuse_entities": [],
+    "num_new_entities": 4,
+    "num_accounts": 3,
+    "num_transactions": 12,
+    "complexity": 5,
+    "steps": [
+      "Create 2 new individual mules with clean financial histories",
+      "Establish 1 new shell company with offshore bank account for consolidation",
+      "Divide $50,000 into 6 separate $9,999.99 cash deposits",
+      "Mule #1 makes 3 deposits below $10k threshold to local bank accounts",
+      "Mule #2 makes 3 deposits below $10k threshold to different local bank accounts",
+      "Transfer funds from mule accounts to shell company's offshore account in increments",
+      "Conduct final transfers to legitimate business account under false ownership documentation",
+      "Distribute 'clean' funds through legitimate business transactions"
+    ],
+    "evasion_techniques": [
+      "Alternate deposit days between mules to avoid patterns",
+      "Use cash from multiple sources to confuse origin trails",
+      "Timing deposits to avoid daily deposit limits on single accounts",
+      "Create false employment documentation for mules to justify cash deposits"
+    ]
+  },
+  "all_suspicious": true,
+  "typology": "structuring",
+  "total_amount": 99997.07,
+  "entity_ids": [
+    "ENT_6f079a49fcc3",
+    "ENT_5508f82b47eb",
+    "ENT_8339970d4d66",
+    "ENT_001f984d0579"
+  ],
+  "transaction_ids": [
+    "TXN_fce7acf57c8f",
+    "TXN_87542f3e1ed3",
+    "TXN_2bd43431ef0b",
+    "TXN_3a8fc92c9572",
+    "TXN_890c264739ad",
+    "TXN_8f9a11cd73a1",
+    "TXN_64375068bdf7",
+    "TXN_3bae37f46748",
+    "TXN_22adde1453dd",
+    "TXN_ee7fb1a1b4df",
+    "TXN_a128a0833987",
+    "TXN_a4e4e837392b"
+  ]
+}

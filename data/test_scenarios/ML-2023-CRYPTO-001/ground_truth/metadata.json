@@ -1,0 +1,12 @@
+{
+  "typology": "crypto_mixing",
+  "total_amount": 250000.0,
+  "complexity": 7,
+  "apply_evasion": true,
+  "scenario_description": null,
+  "generated_at": "2026-02-14T09:50:42.240838",
+  "voting_result": {
+    "confidence": 1.0,
+    "total_votes": 1
+  }
+}

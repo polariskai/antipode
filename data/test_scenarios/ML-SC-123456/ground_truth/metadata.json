@@ -1,0 +1,12 @@
+{
+  "typology": "mule_network",
+  "total_amount": 200000.0,
+  "complexity": 6,
+  "apply_evasion": true,
+  "scenario_description": null,
+  "generated_at": "2026-02-14T01:42:25.560172",
+  "voting_result": {
+    "confidence": 1.0,
+    "total_votes": 1
+  }
+}

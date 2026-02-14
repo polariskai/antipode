@@ -1,0 +1,53 @@
+{
+  "scenario_plan": {
+    "scenario_id": "TRADE-LAU-2023-07",
+    "typology": "trade_based",
+    "reuse_entities": [],
+    "num_new_entities": 4,
+    "num_accounts": 5,
+    "num_transactions": 12,
+    "complexity": 7,
+    "steps": [
+      "Establish a legitimate-sounding import/export company in Singapore to serve as the front",
+      "Create a shell company in the British Virgin Islands with complex ownership structure",
+      "Set up a fake supplier company in China using altered shipping documentation",
+      "Generate false purchase orders for machinery between Singapore and China entities",
+      "Open trade credit facility through Dubai-based intermediary bank",
+      "Process over-invoiced shipments through Hong Kong logistics hub",
+      "Transfer funds from Dubai to BVI shell company using trade finance transactions",
+      "Disburse cash from shell company to real estate investment firm in Switzerland",
+      "Final integration via purchase of luxury goods from Miami-based seller",
+      "Create paper trail showing cross-border trade that matches financial flows"
+    ],
+    "evasion_techniques": [
+      "Use of multiple jurisdictions (Singapore, BVI, Dubai)",
+      "Falsified shipping manifests and insurance documentation",
+      "Over-invoicing by 35% of actual shipment values",
+      "Multiple intermediaries obscuring direct ownership",
+      "Timing discrepancies between trade documentation and fund transfers"
+    ]
+  },
+  "all_suspicious": true,
+  "typology": "trade_based",
+  "total_amount": 102136.22,
+  "entity_ids": [
+    "ENT_a85f9b40f09d",
+    "ENT_0c10597c10db",
+    "ENT_531360bbfcbb",
+    "ENT_38a8e101fbb0"
+  ],
+  "transaction_ids": [
+    "TXN_18d761370ead",
+    "TXN_3527a56e64e9",
+    "TXN_4546c112bfc9",
+    "TXN_8a367f312bfb",
+    "TXN_047819d9cbf1",
+    "TXN_dfee7a8a5b25",
+    "TXN_f767ba3b6a20",
+    "TXN_98061cd7375b",
+    "TXN_951fad6b55cb",
+    "TXN_d23d395972e9",
+    "TXN_18f1702c561a",
+    "TXN_2f6f0bdc09cd"
+  ]
+}

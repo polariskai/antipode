@@ -1,0 +1,93 @@
+[
+  {
+    "counterparty_id": "CP_00000",
+    "name": "Atlas Enterprises",
+    "account_number": "858274483167",
+    "bank_code": "BOFAUS3N",
+    "bank_name": "U.S. Bank",
+    "country": "US",
+    "first_seen_date": "2026-01-31",
+    "last_seen_date": "2026-01-31",
+    "txn_count": 1,
+    "total_volume_usd": 1288.01,
+    "source_system": "ADVERSARIAL_GENERATOR"
+  },
+  {
+    "counterparty_id": "CP_00001",
+    "name": "Charlotte Allen",
+    "account_number": "DE49OKXZ54647251149949",
+    "bank_code": "COBADEFF",
+    "bank_name": "Commerzbank",
+    "country": "DE",
+    "first_seen_date": "2025-10-10",
+    "last_seen_date": "2025-10-10",
+    "txn_count": 1,
+    "total_volume_usd": 20046.52,
+    "source_system": "ADVERSARIAL_GENERATOR"
+  },
+  {
+    "counterparty_id": "CP_00002",
+    "name": "Hans Wilson",
+    "account_number": "SG48UTMJ55596782385521",
+    "bank_code": "OCBCSGSG",
+    "bank_name": "OCBC Bank",
+    "country": "SG",
+    "first_seen_date": "2025-10-13",
+    "last_seen_date": "2025-10-13",
+    "txn_count": 1,
+    "total_volume_usd": 15342.54,
+    "source_system": "ADVERSARIAL_GENERATOR"
+  },
+  {
+    "counterparty_id": "CP_00003",
+    "name": "Jennifer Adams",
+    "account_number": "917089254284",
+    "bank_code": "CHASUS33",
+    "bank_name": "Citibank",
+    "country": "US",
+    "first_seen_date": "2025-08-02",
+    "last_seen_date": "2025-08-02",
+    "txn_count": 1,
+    "total_volume_usd": 2954.48,
+    "source_system": "ADVERSARIAL_GENERATOR"
+  },
+  {
+    "counterparty_id": "CP_00004",
+    "name": "Summit Technologies",
+    "account_number": "578860384511",
+    "bank_code": "USBKUS44",
+    "bank_name": "Bank of America",
+    "country": "US",
+    "first_seen_date": "2025-05-04",
+    "last_seen_date": "2025-05-04",
+    "txn_count": 1,
+    "total_volume_usd": 15662.52,
+    "source_system": "ADVERSARIAL_GENERATOR"
+  },
+  {
+    "counterparty_id": "CP_00005",
+    "name": "Olympus Enterprises",
+    "account_number": "504940686594",
+    "bank_code": "CITIUS33",
+    "bank_name": "Bank of America",
+    "country": "US",
+    "first_seen_date": "2025-09-12",
+    "last_seen_date": "2025-09-12",
+    "txn_count": 1,
+    "total_volume_usd": 22540.47,
+    "source_system": "ADVERSARIAL_GENERATOR"
+  },
+  {
+    "counterparty_id": "CP_00006",
+    "name": "Elizabeth Khan",
+    "account_number": "463614775777",
+    "bank_code": "CHASUS33",
+    "bank_name": "Wells Fargo",
+    "country": "US",
+    "first_seen_date": "2025-03-05",
+    "last_seen_date": "2025-03-05",
+    "txn_count": 1,
+    "total_volume_usd": 7096.17,
+    "source_system": "ADVERSARIAL_GENERATOR"
+  }
+]

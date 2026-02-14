@@ -1,0 +1,45 @@
+{
+  "scenario_plan": {
+    "scenario_id": "ML-2023-CRYPTO-001",
+    "typology": "crypto_mixing",
+    "reuse_entities": [],
+    "num_new_entities": 4,
+    "num_accounts": 3,
+    "num_transactions": 7,
+    "complexity": 7,
+    "steps": [
+      "Depositor converts $250,000 fiat to Bitcoin (BTC) via centralized exchange A using fake ID.",
+      "BTC sent to crypto mixer's wallet 1 in $5,000 micro-transactions (structuring) to avoid reporting.",
+      "Mixer returns anonymized BTC to wallet 2 with address recycling technique to obscure trail.",
+      "BTC transferred to decentralized exchange B and swapped to Ethereum (ETH) using private key method.",
+      "ETH sent to mixer 2 via wallet 3 with additional $10,000 in dummy transactions to create false flow.",
+      "Mixed ETH withdrawn from crypto mixer to wallet 4, converted to fiat on exchange C using offshore account.",
+      "Fiat withdrawn to shell company bank account and used to purchase 'virtual goods' for integration."
+    ],
+    "evasion_techniques": [
+      "Private key exchange transfers",
+      "Cryptocurrency address recycling",
+      "Multi-layer mixing via different blockchain protocols",
+      "Offshore account finalization",
+      "Virtual goods integration for asset legitimization"
+    ]
+  },
+  "all_suspicious": true,
+  "typology": "crypto_mixing",
+  "total_amount": 84930.71,
+  "entity_ids": [
+    "ENT_0742ee2712ac",
+    "ENT_d90aa908fafe",
+    "ENT_5527aeff60cc",
+    "ENT_e0720e9c386c"
+  ],
+  "transaction_ids": [
+    "TXN_8f54c8d7c340",
+    "TXN_95370b5dd462",
+    "TXN_6f5d9f90407f",
+    "TXN_f26c9745300a",
+    "TXN_d54c62174b3e",
+    "TXN_f560d3462dee",
+    "TXN_93608facf93e"
+  ]
+}

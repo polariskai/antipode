@@ -1,0 +1,20 @@
+{
+  "is_valid": true,
+  "is_realistic": false,
+  "detection_difficulty": 0.3,
+  "issues": [
+    "Mule networks typically require more entities (5 is low for realistic complexity)",
+    "15 transactions is insufficient for a layered mule network typology",
+    "No geographic jurisdiction details provided (critical for mule network realism)",
+    "Entity-to-account ratio (2 accounts per entity) may be too simplistic",
+    "Lack of temporal details (dates/timing) prevents verification of transaction sequence"
+  ],
+  "suggestions": [
+    "Add 3-5 more entities to create a more complex network structure",
+    "Increase transactions to 30-50 to show proper layering",
+    "Specify jurisdictions across multiple countries with different regulatory regimes",
+    "Include shell company entities with no legitimate business activity",
+    "Add transaction dates showing staggered timing across weeks/months"
+  ],
+  "confidence": 0.75
+}

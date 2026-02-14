@@ -1,0 +1,22 @@
+{
+  "is_valid": true,
+  "is_realistic": false,
+  "detection_difficulty": 0.65,
+  "issues": [
+    "Insufficient transaction details (no dates, amounts, or patterns provided)",
+    "Only 3 entities for shell company typology is below typical complexity (usually 5-10+ entities)",
+    "No geographic jurisdiction information provided for shell company operations",
+    "12 transactions for shell company is low (typical shell companies have 20-50+ transactions)",
+    "No evidence of layering or integration phases in transaction flow",
+    "Total amount ($132,869.24) lacks context for structuring patterns"
+  ],
+  "suggestions": [
+    "Add transaction dates and amounts showing structured patterns under reporting thresholds",
+    "Include 5-10 entities with complex ownership chains",
+    "Specify offshore jurisdictions (e.g., Cayman Islands, BVI) for shell company operations",
+    "Add 20-30 transactions with layering (e.g., currency conversion, trade-based) and integration phases",
+    "Show transaction flow between entities with logical timing (e.g., 30-60 day intervals)",
+    "Include small amounts (<$10k) to avoid CTR requirements"
+  ],
+  "confidence": 0.75
+}

@@ -29,9 +29,9 @@ htmlcov/
 # Data output
 data/synthetic*/
 output/
-*.csv
-*.json
-!docs/*.json
+
+# Large generated datasets (mixed datasets can be 10MB+)
+data/mixed_aml/
 
 # Environment
 .env

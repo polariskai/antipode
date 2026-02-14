@@ -1,0 +1,12 @@
+{
+  "typology": "trade_based",
+  "total_amount": 750000.0,
+  "complexity": 7,
+  "apply_evasion": true,
+  "scenario_description": null,
+  "generated_at": "2026-02-14T09:48:56.218080",
+  "voting_result": {
+    "confidence": 1.0,
+    "total_votes": 1
+  }
+}

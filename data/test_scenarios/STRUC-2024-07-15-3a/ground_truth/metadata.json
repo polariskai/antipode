@@ -1,0 +1,12 @@
+{
+  "typology": "structuring",
+  "total_amount": 50000.0,
+  "complexity": 5,
+  "apply_evasion": true,
+  "scenario_description": null,
+  "generated_at": "2026-02-14T01:35:35.346942",
+  "voting_result": {
+    "confidence": 1.0,
+    "total_votes": 1
+  }
+}

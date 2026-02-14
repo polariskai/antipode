@@ -1,0 +1,52 @@
+{
+  "scenario_plan": {
+    "scenario_id": "ML-SC-123456",
+    "typology": "mule_network",
+    "reuse_entities": [],
+    "num_new_entities": 5,
+    "num_accounts": 5,
+    "num_transactions": 15,
+    "complexity": 6,
+    "steps": [
+      "Recruit four non-English-speaking students (mules) through fake job offers.",
+      "Instruct mules to open bank accounts using fabricated employment documentation.",
+      "Divide $200,000 into five $40,000 increments for each mule.",
+      "Direct mules to deposit cash and receive multi-currency wire transfers to account.",
+      "Mules transfer funds in daily $9,999 chunks to offshore facilitator accounts.",
+      "Facilitator consolidates funds into legitimate offshore real estate transactions."
+    ],
+    "evasion_techniques": [
+      "Multi-jurisdictional account layering",
+      "Structuring below reporting thresholds",
+      "Exploiting weak AML verification for student accounts",
+      "Using currency conversion to obfuscate trail"
+    ]
+  },
+  "all_suspicious": true,
+  "typology": "mule_network",
+  "total_amount": 99897.2,
+  "entity_ids": [
+    "ENT_ee43ed6856fb",
+    "ENT_d4b63eff9208",
+    "ENT_1b6dbd17d5be",
+    "ENT_1e8216a63c81",
+    "ENT_c77edfe0047e"
+  ],
+  "transaction_ids": [
+    "TXN_352fc1ae3d75",
+    "TXN_7cc81fba584b",
+    "TXN_f5f9ac3e6d6a",
+    "TXN_d58cf6ecc10e",
+    "TXN_3291ecd5f0af",
+    "TXN_4804e28a8862",
+    "TXN_35cd79c241ff",
+    "TXN_14218a645ce6",
+    "TXN_57d1f8f1473c",
+    "TXN_8bc763cb3eb4",
+    "TXN_0913cabfdc93",
+    "TXN_b2e04650aee5",
+    "TXN_04266e207e73",
+    "TXN_3b44c0e989b8",
+    "TXN_ab6f0a976bf7"
+  ]
+}

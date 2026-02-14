@@ -1,0 +1,12 @@
+{
+  "typology": "layering",
+  "total_amount": 500000.0,
+  "complexity": 7,
+  "apply_evasion": true,
+  "scenario_description": null,
+  "generated_at": "2026-02-14T01:39:45.928466",
+  "voting_result": {
+    "confidence": 1.0,
+    "total_votes": 1
+  }
+}

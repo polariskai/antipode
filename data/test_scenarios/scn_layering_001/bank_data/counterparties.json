@@ -1,0 +1,80 @@
+[
+  {
+    "counterparty_id": "CP_00000",
+    "name": "Atlas Resources",
+    "account_number": "IE85XFUP03297226465972",
+    "bank_code": "HSBCSGSG",
+    "bank_name": "BNP Paribas",
+    "country": "IE",
+    "first_seen_date": "2026-02-14",
+    "last_seen_date": "2026-02-14",
+    "txn_count": 1,
+    "total_volume_usd": 100000.0,
+    "source_system": "ADVERSARIAL_GENERATOR"
+  },
+  {
+    "counterparty_id": "CP_00001",
+    "name": "Patricia Young",
+    "account_number": "NL92ETWF63927197319916",
+    "bank_code": "DEUTDEFF",
+    "bank_name": "BNP Paribas",
+    "country": "NL",
+    "first_seen_date": "2026-02-10",
+    "last_seen_date": "2026-02-10",
+    "txn_count": 1,
+    "total_volume_usd": 96003.31,
+    "source_system": "ADVERSARIAL_GENERATOR"
+  },
+  {
+    "counterparty_id": "CP_00002",
+    "name": "Carol Brown",
+    "account_number": "367023631194",
+    "bank_code": "BOFAUS3N",
+    "bank_name": "U.S. Bank",
+    "country": "US",
+    "first_seen_date": "2026-02-08",
+    "last_seen_date": "2026-02-08",
+    "txn_count": 1,
+    "total_volume_usd": 92611.02,
+    "source_system": "ADVERSARIAL_GENERATOR"
+  },
+  {
+    "counterparty_id": "CP_00003",
+    "name": "Titan Properties",
+    "account_number": "936332881687",
+    "bank_code": "BOFAUS3N",
+    "bank_name": "Bank of America",
+    "country": "US",
+    "first_seen_date": "2026-02-02",
+    "last_seen_date": "2026-02-02",
+    "txn_count": 1,
+    "total_volume_usd": 88345.87,
+    "source_system": "ADVERSARIAL_GENERATOR"
+  },
+  {
+    "counterparty_id": "CP_00004",
+    "name": "National Development",
+    "account_number": "AU60XITV80538551226590",
+    "bank_code": "BNPAFRPP",
+    "bank_name": "HSBC",
+    "country": "AU",
+    "first_seen_date": "2026-01-29",
+    "last_seen_date": "2026-01-29",
+    "txn_count": 1,
+    "total_volume_usd": 86479.25,
+    "source_system": "ADVERSARIAL_GENERATOR"
+  },
+  {
+    "counterparty_id": "CP_00005",
+    "name": "Emily Baker",
+    "account_number": "FR23BCEZ87708771344340",
+    "bank_code": "BNPAFRPP",
+    "bank_name": "BNP Paribas",
+    "country": "FR",
+    "first_seen_date": "2026-01-20",
+    "last_seen_date": "2026-01-20",
+    "txn_count": 1,
+    "total_volume_usd": 85522.65,
+    "source_system": "ADVERSARIAL_GENERATOR"
+  }
+]

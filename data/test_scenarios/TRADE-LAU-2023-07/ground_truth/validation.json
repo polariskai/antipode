@@ -1,0 +1,20 @@
+{
+  "is_valid": true,
+  "is_realistic": false,
+  "detection_difficulty": 0.65,
+  "issues": [
+    "Missing key trade-based elements (e.g., over/under invoicing, shell company structure)",
+    "Insufficient transaction details to verify trade documentation consistency",
+    "Entity relationships lack clear buyer/seller roles typical of trade scenarios",
+    "Transaction timing patterns not specified to validate trade cycle realism",
+    "No evidence of currency conversion or international payment mechanisms"
+  ],
+  "suggestions": [
+    "Add invoice discrepancies showing over/under invoicing of goods",
+    "Specify entity roles (importer/exporter/intermediary) with geographic alignment",
+    "Include documentation chain (proforma, shipping, customs) in transaction metadata",
+    "Add currency conversion transactions between jurisdictions",
+    "Define clear time intervals between order placement and payment"
+  ],
+  "confidence": 0.75
+}

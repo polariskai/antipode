@@ -1,0 +1,20 @@
+{
+  "is_valid": true,
+  "is_realistic": false,
+  "detection_difficulty": 0.3,
+  "issues": [
+    "Integration typology typically requires more complex transaction layers than 12 total transactions",
+    "Only 4 entities with 8 accounts may be insufficient for effective money integration",
+    "Transaction count (12) appears too low for $88k+ amount without showing proper layering",
+    "No evidence of final integration methods (real estate, art purchases, etc.) in transaction details",
+    "Lack of geographic diversity in entities/accounts reduces typology realism"
+  ],
+  "suggestions": [
+    "Add 2-3 more entities to create proper business layering",
+    "Include 15-20 transactions with varied timing and amounts",
+    "Specify integration methods like property purchases or business investments",
+    "Add cross-border transactions to demonstrate geographic complexity",
+    "Include shell company structures or charitable donations as integration vehicles"
+  ],
+  "confidence": 0.75
+}

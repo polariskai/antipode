@@ -1,0 +1,24 @@
+[
+  {
+    "relationship_id": "REL_4e41d52d7a2a",
+    "from_customer_id": "ENT_e61ce3e2ad11",
+    "to_customer_id": "ENT_76cc70ee291c",
+    "relationship_type": "UBO_OF",
+    "effective_from": "2021-03-17",
+    "effective_to": null,
+    "verified": false,
+    "verification_date": null,
+    "notes": null
+  },
+  {
+    "relationship_id": "REL_b119adf3a1ce",
+    "from_customer_id": "ENT_76cc70ee291c",
+    "to_customer_id": "ENT_c02669f36897",
+    "relationship_type": "UBO_OF",
+    "effective_from": "2024-07-21",
+    "effective_to": null,
+    "verified": false,
+    "verification_date": null,
+    "notes": null
+  }
+]

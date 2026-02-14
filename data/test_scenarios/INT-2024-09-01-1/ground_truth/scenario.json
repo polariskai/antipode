@@ -1,0 +1,48 @@
+{
+  "scenario_plan": {
+    "scenario_id": "INT-2024-09-01-1",
+    "typology": "integration",
+    "reuse_entities": [],
+    "num_new_entities": 4,
+    "num_accounts": 6,
+    "num_transactions": 12,
+    "complexity": 6,
+    "steps": [
+      "Establish three new entities: a real estate development company, an import-export shell company, and a luxury car dealership",
+      "Create fake corporate documentation showing the shell company owns land in a third jurisdiction",
+      "Have the real estate company purchase the 'land' from the shell company for $250,000 (overinvoicing property)",
+      "Use the shell company to purchase high-value cars from the dealership at 20% above market price ($50,000)",
+      "The real estate company sells refurbished cars to legitimate buyers at normal market prices",
+      "Divert $300,000 through the corporate accounts to legitimate business expenses, hiding the illicit proceeds"
+    ],
+    "evasion_techniques": [
+      "Overinvoicing property transactions",
+      "Layering through multiple business-to-business transfers",
+      "Using shell company as fake landowner in different jurisdiction",
+      "Mixing illicit funds with legitimate car dealership revenue"
+    ]
+  },
+  "all_suspicious": true,
+  "typology": "integration",
+  "total_amount": 88432.01,
+  "entity_ids": [
+    "ENT_3126ff4bf3d4",
+    "ENT_6c4519107af4",
+    "ENT_be19d0368c35",
+    "ENT_c7759cd272d6"
+  ],
+  "transaction_ids": [
+    "TXN_5627b9eb2e0f",
+    "TXN_6787ab78cfcd",
+    "TXN_5ff14296717c",
+    "TXN_7eba0a712188",
+    "TXN_b2e0449bd5e3",
+    "TXN_bcfb0f78f51a",
+    "TXN_2029403778ba",
+    "TXN_3bad986a46ae",
+    "TXN_65116bf93f43",
+    "TXN_b9d7cc86d1a7",
+    "TXN_0485ff86d55f",
+    "TXN_d3af067cc641"
+  ]
+}

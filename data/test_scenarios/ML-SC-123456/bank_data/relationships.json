@@ -1,0 +1,46 @@
+[
+  {
+    "relationship_id": "REL_53375f7dbd04",
+    "from_customer_id": "ENT_ee43ed6856fb",
+    "to_customer_id": "ENT_d4b63eff9208",
+    "relationship_type": "DIRECTOR_OF",
+    "effective_from": "2024-12-31",
+    "effective_to": null,
+    "verified": false,
+    "verification_date": null,
+    "notes": null
+  },
+  {
+    "relationship_id": "REL_ea963f8b663e",
+    "from_customer_id": "ENT_ee43ed6856fb",
+    "to_customer_id": "ENT_1b6dbd17d5be",
+    "relationship_type": "DIRECTOR_OF",
+    "effective_from": "2025-06-03",
+    "effective_to": null,
+    "verified": false,
+    "verification_date": null,
+    "notes": null
+  },
+  {
+    "relationship_id": "REL_c233125ea099",
+    "from_customer_id": "ENT_ee43ed6856fb",
+    "to_customer_id": "ENT_1e8216a63c81",
+    "relationship_type": "DIRECTOR_OF",
+    "effective_from": "2024-03-10",
+    "effective_to": null,
+    "verified": false,
+    "verification_date": null,
+    "notes": null
+  },
+  {
+    "relationship_id": "REL_b34841356e00",
+    "from_customer_id": "ENT_ee43ed6856fb",
+    "to_customer_id": "ENT_c77edfe0047e",
+    "relationship_type": "DIRECTOR_OF",
+    "effective_from": "2024-07-01",
+    "effective_to": null,
+    "verified": false,
+    "verification_date": null,
+    "notes": null
+  }
+]
