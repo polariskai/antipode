@@ -4,7 +4,7 @@ Generates alerts from signals (not raw transactions).
 """
 
 import numpy as np
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from typing import List, Dict, Any, Optional, Tuple
 from uuid import uuid4
 from collections import Counter
@@ -170,19 +170,28 @@ class AlertRulesEngine:
         """Create an alert dictionary."""
         account_id = signals.get('account_id', '')
         customer_id = signals.get('customer_id', '')
-        
+
         # Compute score based on signals and risk level
         score = self._compute_score(signals, rule, risk_level)
-        
+
         # Extract risk factors
         risk_factors = self._extract_risk_factors(signals, rule)
-        
+
         # Get triggering signals
         triggering_signals = self._get_triggering_signals(signals, rule)
-        
+
         # Get contributing transaction IDs based on alert type
         transaction_ids = self._get_contributing_transactions(signals, rule)
-        
+
+        # Compute amount involved from volume signals
+        amount_involved = signals.get('volume_30d', 0.0)
+        if amount_involved == 0:
+            amount_involved = signals.get('volume_90d', 0.0)
+
+        # Lookback period
+        lookback_end = as_of_date
+        lookback_start = as_of_date - timedelta(days=30)
+
         alert = Alert(
             alert_id=f"ALERT_{uuid4().hex[:12]}",
             created_ts=datetime.combine(as_of_date, datetime.min.time()),
@@ -197,12 +206,15 @@ class AlertRulesEngine:
             triggering_signals=triggering_signals,
             alert_type=rule.get('alert_type', ''),
             description=rule.get('description', ''),
+            amount_involved=amount_involved,
+            lookback_start=lookback_start,
+            lookback_end=lookback_end,
             status=AlertStatus.NEW,
             _true_positive=scenario is not None,
             _scenario_id=scenario.get('scenario_id') if scenario else None,
             _typology=scenario.get('typology') if scenario else None,
         )
-        
+
         return alert.to_dict()
     
     def _compute_score(
@@ -301,10 +313,20 @@ class AlertRulesEngine:
             'round_amounts': 'round_amount_ratio',
             'rapid_movement': 'velocity_30d',
             'new_counterparties': 'velocity_30d',
+            'high_cash': 'volume_30d',
+            'dormant_reactivation': 'velocity_30d',
+            'network_risk': 'volume_30d',
+            'adverse_media': 'volume_30d',
+            'kyc_refresh': 'volume_30d',
+            'declared_mismatch': 'volume_30d',
         }
-        
+
         # Transaction-based alert types that should always have transaction IDs
-        transaction_based_alerts = ['structuring', 'high_risk_corridor', 'volume_anomaly', 'round_amounts', 'rapid_movement']
+        transaction_based_alerts = [
+            'structuring', 'high_risk_corridor', 'volume_anomaly',
+            'round_amounts', 'rapid_movement', 'high_cash',
+            'dormant_reactivation', 'new_counterparties',
+        ]
         
         signal_name = alert_to_signal_map.get(alert_type)
         

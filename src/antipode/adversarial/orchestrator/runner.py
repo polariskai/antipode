@@ -31,6 +31,7 @@ if missing_vars:
 from .orchestrator import AdversarialOrchestrator
 from ..config.config import TypologyType, OrchestratorConfig
 from .mixed_orchestrator import MixedScenarioOrchestrator, MixedDatasetConfig
+from ..tms import TMSAlertGenerator, TMSConfig
 
 
 def parse_args():
@@ -53,6 +54,12 @@ Examples:
 
   # Custom ratios for mixed dataset
   python -m antipode.adversarial.runner --mixed --tn-ratio 0.95 --fp-ratio 0.03 --tp-ratio 0.02
+
+  # Generate TMS alert dataset (mixed data + alert queue with >95% FP rate)
+  python -m antipode.adversarial.orchestrator.runner --tms --entities 100 --output data/tms_alerts
+
+  # TMS with custom FP rate
+  python -m antipode.adversarial.orchestrator.runner --tms --entities 100 --fp-rate 0.97
 """
     )
     
@@ -146,7 +153,28 @@ Examples:
         default=0.02,
         help="True positive ratio for mixed dataset (default: 0.02)"
     )
-    
+
+    # TMS alert generation arguments
+    parser.add_argument(
+        "--tms",
+        action="store_true",
+        help="Generate TMS alert dataset with >95%% FP rate from mixed data"
+    )
+
+    parser.add_argument(
+        "--fp-rate",
+        type=float,
+        default=0.95,
+        help="Target false positive rate for TMS alerts (default: 0.95)"
+    )
+
+    parser.add_argument(
+        "--alerts-per-1000",
+        type=int,
+        default=50,
+        help="Target alerts per 1000 accounts for TMS (default: 50)"
+    )
+
     return parser.parse_args()
 
 
@@ -302,17 +330,80 @@ async def run_mixed(args):
     return dataset
 
 
+async def run_tms(args):
+    """Generate TMS alert dataset (mixed data + alert queue with >95% FP rate)"""
+
+    print(f"\nGenerating TMS alert dataset...")
+    print(f"  Entities: {args.entities}")
+    print(f"  Target FP rate: {args.fp_rate:.1%}")
+    print(f"  Output: {args.output}")
+
+    # Step 1: Generate mixed dataset
+    print("\n--- Step 1: Generating mixed bank data ---")
+    config = MixedDatasetConfig(
+        true_negative_ratio=args.tn_ratio,
+        false_positive_ratio=args.fp_ratio,
+        true_positive_ratio=args.tp_ratio,
+        num_entities=args.entities,
+        output_dir=args.output,
+    )
+
+    orchestrator = MixedScenarioOrchestrator(config)
+    dataset = await orchestrator.generate_mixed_dataset()
+
+    # Step 2: Generate TMS alerts from the mixed data
+    print("\n--- Step 2: Generating TMS alerts ---")
+    tms_config = TMSConfig(
+        target_fp_rate=args.fp_rate,
+        alerts_per_1000_accounts=getattr(args, "alerts_per_1000", 50),
+    )
+
+    tms_generator = TMSAlertGenerator(tms_config)
+    tms_output = tms_generator.generate_tms_alerts(
+        entities=dataset.entities,
+        accounts=dataset.accounts,
+        transactions=dataset.transactions,
+        relationships=dataset.relationships,
+    )
+
+    # Step 3: Save output
+    tms_output.save(args.output)
+
+    # Print summary
+    summary = tms_output.summary
+    print(f"\n{'='*60}")
+    print(f"TMS DATASET READY")
+    print(f"{'='*60}")
+    print(f"  Dataset ID: {tms_output.dataset_id}")
+    print(f"  Total Alerts: {summary['total_alerts']}")
+    print(f"  True Positives: {summary['true_positives']}")
+    print(f"  False Positives: {summary['false_positives']}")
+    print(f"  FP Rate: {summary['fp_rate']:.2%}")
+    print(f"  SAR Filings: {summary['sar_filings']}")
+    print(f"\nOutput saved to: {args.output}/{tms_output.dataset_id}/")
+    print(f"  alerts/          - Alert packages for AML agent input")
+    print(f"  bank_data/       - Queryable bank records")
+    print(f"  ground_truth/    - Resolution labels and evaluation guide")
+
+    return tms_output
+
+
 async def main():
     args = parse_args()
-    
+
     # Set random seed if provided
     if args.seed:
         import random
         import numpy as np
         random.seed(args.seed)
         np.random.seed(args.seed)
-    
+
     try:
+        # Handle TMS alert dataset generation
+        if args.tms:
+            await run_tms(args)
+            return 0
+
         # Handle mixed dataset generation
         if args.mixed:
             await run_mixed(args)
