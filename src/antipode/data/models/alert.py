@@ -90,8 +90,8 @@ class Alert:
     _typology: Optional[str] = None
     
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary."""
-        return {
+        """Convert to dictionary, including hidden ground truth fields."""
+        d = {
             "alert_id": self.alert_id,
             "created_ts": self.created_ts.isoformat() if self.created_ts else None,
             "rule_id": self.rule_id,
@@ -115,6 +115,14 @@ class Alert:
             "disposition_ts": self.disposition_ts.isoformat() if self.disposition_ts else None,
             "analyst_id": self.analyst_id,
         }
+        # Include hidden ground truth fields (used internally for evaluation)
+        if self._true_positive is not None:
+            d["_true_positive"] = self._true_positive
+        if self._scenario_id is not None:
+            d["_scenario_id"] = self._scenario_id
+        if self._typology is not None:
+            d["_typology"] = self._typology
+        return d
     
     @property
     def is_sar_able(self) -> bool:

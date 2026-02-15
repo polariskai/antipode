@@ -260,6 +260,16 @@ class TMSAlertGenerator:
         """
         Generate complete TMS alert dataset.
 
+        Pipeline:
+        1. Index dataset and identify TP entities/accounts from ground truth
+        2. Compute signals from transactions
+        3. Generate rule-based alerts (may catch some TPs)
+        4. Force-generate TP alerts for every TP account not already caught
+        5. Pad with FP alerts to achieve target FP rate (>95%)
+        6. Generate prior alerts for account history
+        7. Package alerts with rich investigation context
+        8. Simulate investigation lifecycle (ground truth)
+
         Args:
             entities: All entities (customers/companies)
             accounts: All accounts
@@ -274,8 +284,8 @@ class TMSAlertGenerator:
         print(f"  Input: {len(entities)} entities, {len(accounts)} accounts, {len(transactions)} transactions")
         print(f"  Target FP rate: {self.config.target_fp_rate:.1%}")
 
-        # Step 1: Build indices
-        print("  [1/7] Indexing dataset...")
+        # Step 1: Build indices and identify TP entities
+        print("  [1/8] Indexing dataset...")
         entity_by_id = {e.get("entity_id", e.get("customer_id", "")): e for e in entities}
         account_by_id = {a.get("account_id", ""): a for a in accounts}
         txns_by_account = defaultdict(list)
@@ -290,39 +300,78 @@ class TMSAlertGenerator:
             eid = a.get("entity_id") or a.get("customer_id", "")
             account_to_entity[a.get("account_id", "")] = eid
 
-        # Build scenario ground truth lookup
-        gt_scenarios = []
+        # Identify TP entities and their accounts from ground truth
+        tp_entity_ids = set()
+        tp_entity_typology = {}  # entity_id -> typology
+        tp_entity_scenario = {}  # entity_id -> scenario_id
         for e in entities:
             gt = e.get("_ground_truth", {})
             if gt.get("is_suspicious") or gt.get("label") == "true_positive":
-                for a in accounts:
-                    if (a.get("entity_id") or a.get("customer_id", "")) == e.get("entity_id", e.get("customer_id", "")):
-                        gt_scenarios.append({
-                            "primary_account": a.get("account_id", ""),
-                            "scenario_id": gt.get("scenario_id", f"TP_{uuid4().hex[:8]}"),
-                            "typology": gt.get("typology", "unknown"),
-                        })
+                eid = e.get("entity_id", e.get("customer_id", ""))
+                tp_entity_ids.add(eid)
+                tp_entity_typology[eid] = gt.get("typology", "unknown")
+                tp_entity_scenario[eid] = gt.get("scenario_id", f"TP_{uuid4().hex[:8]}")
+
+        # Build TP account set and scenario lookup for AlertRulesEngine
+        tp_account_ids = set()
+        gt_scenarios = []
+        for a in accounts:
+            eid = a.get("entity_id") or a.get("customer_id", "")
+            acct_gt = a.get("_ground_truth", {})
+            if eid in tp_entity_ids or acct_gt.get("is_suspicious") or acct_gt.get("label") == "true_positive":
+                acct_id = a.get("account_id", "")
+                tp_account_ids.add(acct_id)
+                gt_scenarios.append({
+                    "primary_account": acct_id,
+                    "scenario_id": tp_entity_scenario.get(eid, f"TP_{uuid4().hex[:8]}"),
+                    "typology": tp_entity_typology.get(eid, "unknown"),
+                })
+
+        print(f"         TP entities: {len(tp_entity_ids)}, TP accounts: {len(tp_account_ids)}")
 
         # Step 2: Compute signals
-        print("  [2/7] Computing signals...")
+        print("  [2/8] Computing signals...")
         account_signals = self._compute_signals(accounts, transactions, entities)
+        signals_by_account = {s.get("account_id", ""): s for s in account_signals}
         print(f"         Computed signals for {len(account_signals)} accounts")
 
-        # Step 3: Generate rule-based alerts
-        print("  [3/7] Generating rule-based alerts...")
+        # Step 3: Generate rule-based alerts (may catch some TPs)
+        print("  [3/8] Generating rule-based alerts...")
         raw_alerts = self.alert_engine.generate_alerts(
             account_signals=account_signals,
             scenarios=gt_scenarios,
             as_of_date=date.today(),
         )
-        tp_alerts = [a for a in raw_alerts if a.get("_true_positive")]
+        rule_tp_alerts = [a for a in raw_alerts if a.get("_true_positive")]
         fp_alerts_initial = [a for a in raw_alerts if not a.get("_true_positive")]
-        print(f"         Generated {len(raw_alerts)} raw alerts (TP={len(tp_alerts)}, FP={len(fp_alerts_initial)})")
 
-        # Step 4: Pad FP alerts to achieve target FP rate
-        print("  [4/7] Padding FP alerts to reach target rate...")
+        # Track which TP accounts already have alerts from the rules engine
+        covered_tp_accounts = set()
+        for a in rule_tp_alerts:
+            covered_tp_accounts.add(a.get("account_id", ""))
+
+        print(f"         Generated {len(raw_alerts)} raw alerts (TP={len(rule_tp_alerts)}, FP={len(fp_alerts_initial)})")
+        print(f"         TP accounts covered by rules: {len(covered_tp_accounts)} / {len(tp_account_ids)}")
+
+        # Step 4: Force-generate TP alerts for uncovered TP accounts
+        print("  [4/8] Generating TP alerts for uncovered suspicious accounts...")
+        forced_tp_alerts = self._generate_forced_tp_alerts(
+            tp_account_ids=tp_account_ids,
+            covered_tp_accounts=covered_tp_accounts,
+            tp_entity_typology=tp_entity_typology,
+            tp_entity_scenario=tp_entity_scenario,
+            account_to_entity=account_to_entity,
+            signals_by_account=signals_by_account,
+            txns_by_account=txns_by_account,
+        )
+        all_tp_alerts = rule_tp_alerts + forced_tp_alerts
+        print(f"         Forced {len(forced_tp_alerts)} additional TP alerts")
+        print(f"         Total TP alerts: {len(all_tp_alerts)}")
+
+        # Step 5: Pad FP alerts to achieve target FP rate
+        print("  [5/8] Padding FP alerts to reach target rate...")
         all_alerts = self._pad_fp_alerts(
-            tp_alerts=tp_alerts,
+            tp_alerts=all_tp_alerts,
             fp_alerts=fp_alerts_initial,
             account_signals=account_signals,
             entities=entities,
@@ -335,17 +384,17 @@ class TMSAlertGenerator:
         actual_fp_rate = fp_count / total if total > 0 else 0
         print(f"         Total alerts: {total} (TP={tp_count}, FP={fp_count}, FP rate={actual_fp_rate:.1%})")
 
-        # Step 5: Generate prior alerts
+        # Step 6: Generate prior alerts
         prior_alerts_map = {}
         if self.config.include_prior_alerts:
-            print("  [5/7] Generating prior alerts...")
+            print("  [6/8] Generating prior alerts...")
             prior_alerts_map = self._generate_prior_alerts(accounts, account_signals)
             print(f"         Generated prior alerts for {len(prior_alerts_map)} accounts")
         else:
-            print("  [5/7] Skipping prior alerts (disabled)")
+            print("  [6/8] Skipping prior alerts (disabled)")
 
-        # Step 6: Package alerts
-        print("  [6/7] Packaging alerts...")
+        # Step 7: Package alerts
+        print("  [7/8] Packaging alerts...")
         alert_packages = []
         for alert in all_alerts:
             account_id = alert.get("account_id", "")
@@ -354,10 +403,7 @@ class TMSAlertGenerator:
             account = account_by_id.get(account_id)
 
             # Get signals for this account
-            signals = next(
-                (s for s in account_signals if s.get("account_id") == account_id),
-                {}
-            )
+            signals = signals_by_account.get(account_id, {})
 
             # Get prior alerts
             prior = prior_alerts_map.get(account_id, [])
@@ -372,8 +418,8 @@ class TMSAlertGenerator:
             )
             alert_packages.append(pkg)
 
-        # Step 7: Simulate lifecycle and build ground truth
-        print("  [7/7] Simulating investigation lifecycle...")
+        # Step 8: Simulate lifecycle and build ground truth
+        print("  [8/8] Simulating investigation lifecycle...")
         ground_truth = []
         for alert, pkg in zip(all_alerts, alert_packages):
             resolution = self._simulate_lifecycle(alert, pkg)
@@ -437,10 +483,12 @@ class TMSAlertGenerator:
         """Compute signals for all accounts using existing SignalGenerator."""
         try:
             # Ensure accounts have customer_id field (SignalGenerator expects it)
+            # Adversarial-generated accounts may have entity_id but not customer_id,
+            # or customer_id may be None
             prepared_accounts = []
             for a in accounts:
                 acct = dict(a)
-                if "customer_id" not in acct:
+                if not acct.get("customer_id"):
                     acct["customer_id"] = acct.get("entity_id", "")
                 prepared_accounts.append(acct)
 
@@ -563,6 +611,247 @@ class TMSAlertGenerator:
             signals_list.append(signals)
 
         return signals_list
+
+    # ---- Typology-to-alert-type mapping for realistic TP alerts ----
+    TYPOLOGY_ALERT_MAP = {
+        "structuring": [
+            {"rule_id": "STRUCT_001", "rule_name": "Structuring Pattern", "alert_type": "structuring",
+             "description": "Transactions structured to avoid reporting thresholds",
+             "risk": AlertRiskLevel.HIGH},
+            {"rule_id": "CASH_001", "rule_name": "High Cash Activity", "alert_type": "high_cash",
+             "description": "Unusual proportion of cash transactions",
+             "risk": AlertRiskLevel.MEDIUM},
+        ],
+        "layering": [
+            {"rule_id": "RAPID_001", "rule_name": "Rapid Movement", "alert_type": "rapid_movement",
+             "description": "Funds received and moved out quickly (layering pattern)",
+             "risk": AlertRiskLevel.HIGH},
+            {"rule_id": "NET_001", "rule_name": "Network Risk", "alert_type": "network_risk",
+             "description": "Connected to high-risk entities in network",
+             "risk": AlertRiskLevel.HIGH},
+        ],
+        "mule_network": [
+            {"rule_id": "NET_001", "rule_name": "Network Risk", "alert_type": "network_risk",
+             "description": "Connected to high-risk entities in network",
+             "risk": AlertRiskLevel.HIGH},
+            {"rule_id": "RAPID_001", "rule_name": "Rapid Movement", "alert_type": "rapid_movement",
+             "description": "Funds flow through account rapidly — possible mule activity",
+             "risk": AlertRiskLevel.CRITICAL},
+        ],
+        "shell_company": [
+            {"rule_id": "DECL_001", "rule_name": "Declared vs Actual Mismatch", "alert_type": "declared_mismatch",
+             "description": "Activity significantly exceeds declared turnover for shell entity",
+             "risk": AlertRiskLevel.HIGH},
+            {"rule_id": "NET_001", "rule_name": "Network Risk", "alert_type": "network_risk",
+             "description": "Entity linked to complex ownership network",
+             "risk": AlertRiskLevel.HIGH},
+        ],
+        "trade_based": [
+            {"rule_id": "CORR_001", "rule_name": "High-Risk Corridor", "alert_type": "high_risk_corridor",
+             "description": "Cross-border transactions to high-risk trade corridor",
+             "risk": AlertRiskLevel.HIGH},
+            {"rule_id": "VOL_ANOM_001", "rule_name": "Volume Anomaly", "alert_type": "volume_anomaly",
+             "description": "Unusual transaction volumes inconsistent with declared trade activity",
+             "risk": AlertRiskLevel.MEDIUM},
+        ],
+        "integration": [
+            {"rule_id": "VOL_ANOM_001", "rule_name": "Volume Anomaly", "alert_type": "volume_anomaly",
+             "description": "Large value transactions with unclear economic purpose",
+             "risk": AlertRiskLevel.HIGH},
+            {"rule_id": "DECL_001", "rule_name": "Declared vs Actual Mismatch", "alert_type": "declared_mismatch",
+             "description": "Activity pattern inconsistent with declared business",
+             "risk": AlertRiskLevel.MEDIUM},
+        ],
+        "crypto_mixing": [
+            {"rule_id": "RAPID_001", "rule_name": "Rapid Movement", "alert_type": "rapid_movement",
+             "description": "Rapid fund movement pattern consistent with crypto mixing",
+             "risk": AlertRiskLevel.HIGH},
+            {"rule_id": "CORR_001", "rule_name": "High-Risk Corridor", "alert_type": "high_risk_corridor",
+             "description": "Funds routed through crypto-friendly jurisdictions",
+             "risk": AlertRiskLevel.MEDIUM},
+        ],
+    }
+
+    # Risk factors per typology
+    TYPOLOGY_RISK_FACTORS = {
+        "structuring": [
+            "Multiple transactions near CTR threshold ($10,000)",
+            "Transactions split across short time windows",
+            "Cash deposits structured to avoid reporting",
+            "Pattern of just-below-threshold activity",
+        ],
+        "layering": [
+            "Rapid in-out fund movement across multiple accounts",
+            "Complex chain of intermediary transfers",
+            "No economic rationale for transfer pattern",
+            "Funds layered through multiple entities",
+        ],
+        "mule_network": [
+            "Account used as pass-through for third-party funds",
+            "Multiple unrelated sources depositing to account",
+            "Funds forwarded rapidly to unrelated beneficiaries",
+            "Pattern consistent with money mule recruitment",
+        ],
+        "shell_company": [
+            "Entity with minimal operational footprint",
+            "Nominal registered office with no real operations",
+            "Circular fund flow between related entities",
+            "Complex ownership structure obscures beneficial owner",
+        ],
+        "trade_based": [
+            "Invoice values inconsistent with market prices",
+            "Cross-border payments to high-risk trade zones",
+            "Goods descriptions vague or inconsistent",
+            "Multiple payments for same shipment reference",
+        ],
+        "integration": [
+            "Large-value asset purchase with unclear fund source",
+            "Funds integrated through real estate or business acquisition",
+            "Transaction amounts inconsistent with customer profile",
+            "Layered ownership used to obscure proceeds",
+        ],
+        "crypto_mixing": [
+            "Fund flow pattern consistent with crypto mixer output",
+            "Rapid conversion between fiat and crypto channels",
+            "Structured withdrawals after crypto on-ramp",
+            "Links to known crypto mixing service patterns",
+        ],
+    }
+
+    def _generate_forced_tp_alerts(
+        self,
+        tp_account_ids: set,
+        covered_tp_accounts: set,
+        tp_entity_typology: Dict[str, str],
+        tp_entity_scenario: Dict[str, str],
+        account_to_entity: Dict[str, str],
+        signals_by_account: Dict[str, Dict[str, Any]],
+        txns_by_account: Dict[str, List[Dict[str, Any]]],
+    ) -> List[Dict[str, Any]]:
+        """
+        Force-generate TP alerts for every TP account that wasn't caught
+        by the rules engine.
+
+        In real TMS systems, adversarial launderers try to evade detection,
+        but the TMS still generates SOME alerts on suspicious accounts —
+        that's the point of this simulation. Every TP account must have at
+        least one alert so AML agents can be evaluated on whether they
+        correctly escalate it.
+
+        For each uncovered TP account, we generate 1-3 alerts with:
+        - Alert type matched to the underlying typology
+        - HIGH or CRITICAL risk level (these are real suspicious cases)
+        - Proper ground truth labels (_true_positive, _typology, _scenario_id)
+        """
+        uncovered = tp_account_ids - covered_tp_accounts
+        if not uncovered:
+            return []
+
+        forced_alerts = []
+        as_of_date = date.today()
+
+        for account_id in uncovered:
+            entity_id = account_to_entity.get(account_id, "")
+            typology = tp_entity_typology.get(entity_id, "unknown")
+            scenario_id = tp_entity_scenario.get(entity_id, f"TP_{uuid4().hex[:8]}")
+            signals = signals_by_account.get(account_id, {})
+            acct_txns = txns_by_account.get(account_id, [])
+
+            # Get typology-specific alert templates (fall back to generic)
+            alert_templates = self.TYPOLOGY_ALERT_MAP.get(
+                typology,
+                [{"rule_id": "VOL_ANOM_001", "rule_name": "Volume Anomaly",
+                  "alert_type": "volume_anomaly",
+                  "description": "Unusual transaction pattern detected",
+                  "risk": AlertRiskLevel.HIGH}],
+            )
+
+            # Generate 1-3 alerts per TP account (primary alert always generated)
+            num_alerts = random.choices([1, 2, 3], weights=[0.3, 0.5, 0.2], k=1)[0]
+            num_alerts = min(num_alerts, len(alert_templates))
+
+            # Select alert templates (always include primary + optional secondary)
+            selected_templates = alert_templates[:num_alerts]
+
+            for tmpl in selected_templates:
+                risk_level = tmpl["risk"]
+
+                # Possibly escalate to CRITICAL for high-severity scenarios
+                if typology in ("mule_network", "structuring") and random.random() < 0.3:
+                    risk_level = AlertRiskLevel.CRITICAL
+
+                # Compute score (TP alerts should score 65-95)
+                base_scores = {
+                    AlertRiskLevel.LOW: 40,
+                    AlertRiskLevel.MEDIUM: 55,
+                    AlertRiskLevel.HIGH: 75,
+                    AlertRiskLevel.CRITICAL: 90,
+                }
+                score = base_scores.get(risk_level, 75) + random.uniform(-5, 10)
+                score = max(40, min(100, score))
+
+                # Get risk factors for this typology
+                all_factors = self.TYPOLOGY_RISK_FACTORS.get(typology, ["Suspicious activity pattern detected"])
+                risk_factors = random.sample(all_factors, min(3, len(all_factors)))
+
+                # Get contributing transaction IDs
+                txn_ids = [t.get("txn_id", "") for t in acct_txns[:50] if t.get("txn_id")]
+
+                # Compute amount involved
+                amounts = [t.get("amount", 0) for t in acct_txns]
+                amount_involved = sum(amounts) if amounts else 0
+
+                # Build triggering signals
+                triggering_signals = {}
+                signal_keys = {
+                    "structuring": ["structuring_score", "cash_intensity", "volume_30d"],
+                    "layering": ["rapid_movement_score", "in_out_ratio", "volume_30d"],
+                    "mule_network": ["risk_flow_in", "risk_flow_out", "velocity_30d"],
+                    "shell_company": ["declared_vs_actual_volume", "volume_30d"],
+                    "trade_based": ["corridor_risk_score", "volume_30d"],
+                    "integration": ["volume_zscore", "volume_30d"],
+                    "crypto_mixing": ["rapid_movement_score", "corridor_risk_score"],
+                }
+                for key in signal_keys.get(typology, ["volume_30d"]):
+                    val = signals.get(key)
+                    if val is not None and isinstance(val, (int, float)):
+                        triggering_signals[key] = val
+
+                # Vary the created timestamp
+                days_ago = random.randint(0, 14)
+                created_ts = datetime.combine(
+                    as_of_date - timedelta(days=days_ago),
+                    datetime.min.time().replace(
+                        hour=random.randint(6, 22),
+                        minute=random.randint(0, 59),
+                    ),
+                )
+
+                alert = Alert(
+                    alert_id=f"ALERT_{uuid4().hex[:12]}",
+                    created_ts=created_ts,
+                    rule_id=tmpl["rule_id"],
+                    rule_name=tmpl["rule_name"],
+                    account_id=account_id,
+                    customer_id=signals.get("customer_id", entity_id),
+                    risk_level=risk_level,
+                    score=score,
+                    risk_factors=risk_factors,
+                    transaction_ids=txn_ids,
+                    triggering_signals=triggering_signals,
+                    alert_type=tmpl["alert_type"],
+                    description=tmpl["description"],
+                    amount_involved=amount_involved,
+                    lookback_start=as_of_date - timedelta(days=self.config.lookback_days),
+                    lookback_end=as_of_date,
+                    status=AlertStatus.NEW,
+                    _true_positive=True,
+                    _scenario_id=scenario_id,
+                    _typology=typology,
+                )
+                forced_alerts.append(alert.to_dict())
+
+        return forced_alerts
 
     def _pad_fp_alerts(
         self,
@@ -926,7 +1215,14 @@ class TMSAlertGenerator:
                     weights=[0.7, 0.3],
                     k=1,
                 )[0]
-            sar_filed = risk_level in ("CRITICAL", "HIGH") or random.random() < self.config.sar_filing_rate
+            # SAR filing: guaranteed for CRITICAL/HIGH, probabilistic for others
+            # Real TPs should have meaningful SAR filing rate even at lower risk
+            if risk_level in ("CRITICAL", "HIGH"):
+                sar_filed = True
+            elif risk_level == "MEDIUM":
+                sar_filed = random.random() < 0.60  # 60% chance for medium TP
+            else:
+                sar_filed = random.random() < 0.30  # 30% chance for low TP
             final_status = "SAR_FILED" if sar_filed else "ESCALATED"
         else:
             # FP disposition

@@ -444,10 +444,12 @@ class MixedScenarioOrchestrator:
                 for entity in scenario.entities:
                     entity["_ground_truth"]["label"] = "true_positive"
                     entity["_ground_truth"]["typology"] = typology
+                    entity["_ground_truth"]["is_suspicious"] = True
                 all_entities.extend(scenario.entities)
-                
+
                 for account in scenario.accounts:
                     account["_ground_truth"]["label"] = "true_positive"
+                    account["_ground_truth"]["is_suspicious"] = True
                 all_accounts.extend(scenario.accounts)
                 
                 for txn in scenario.transactions:
