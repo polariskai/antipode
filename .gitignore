@@ -32,7 +32,8 @@ output/
 
 # Large generated datasets (mixed datasets can be 10MB+)
 data/mixed_aml/
-data/tms_alerts/
+data/tms_alerts*/
+data/tms_test_debug/
 
 # Environment
 .env

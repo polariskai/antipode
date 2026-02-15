@@ -10,10 +10,14 @@ Key components:
 - AlertPackage: The rich alert format consumed by AML detection agents
 - TMSConfig: Configuration for alert generation parameters
 - TMSOutput: Complete output with alerts, bank data, and ground truth
+- FPCategory: Data class describing a false-positive category
+- FP_CATEGORIES: Full taxonomy of FP categories by alert type
+- select_fp_category: Helper to pick a weighted FP category for an alert
 """
 
 from .tms_generator import TMSAlertGenerator, TMSConfig, TMSOutput
 from .alert_packager import AlertPackager, AlertPackage
+from .fp_taxonomy import FPCategory, FP_CATEGORIES, select_fp_category
 
 __all__ = [
     "TMSAlertGenerator",
@@ -21,4 +25,7 @@ __all__ = [
     "TMSOutput",
     "AlertPackager",
     "AlertPackage",
+    "FPCategory",
+    "FP_CATEGORIES",
+    "select_fp_category",
 ]

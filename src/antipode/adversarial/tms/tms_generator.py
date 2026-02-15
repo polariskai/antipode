@@ -26,6 +26,7 @@ from .narrative_templates import (
     select_analyst,
     FP_ACTIVITY_TYPES,
 )
+from .fp_taxonomy import select_fp_category, build_fp_investigation_playbooks_summary
 from ...data.generators.alert_generator import AlertRulesEngine
 from ...data.generators.signal_generator import SignalGenerator
 from ...data.models.alert import Alert, AlertRiskLevel, AlertStatus
@@ -165,26 +166,43 @@ class TMSOutput:
         gt_path = output_path / "ground_truth"
         gt_path.mkdir(exist_ok=True)
 
-        # Alert resolutions
+        # Alert resolutions (JSON)
         with open(gt_path / "alert_resolutions.json", "w") as f:
             json.dump(self.ground_truth_resolutions, f, indent=2, default=str)
-
-        # Alert resolutions CSV
-        if self.ground_truth_resolutions:
-            fieldnames = list(self.ground_truth_resolutions[0].keys())
-            with open(gt_path / "alert_resolutions.csv", "w", newline="", encoding="utf-8") as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
-                writer.writeheader()
-                writer.writerows(self.ground_truth_resolutions)
 
         # Summary
         with open(gt_path / "summary.json", "w") as f:
             json.dump(self.summary, f, indent=2, default=str)
 
+        # Alert resolutions CSV (handle nested dict/list fields)
+        if self.ground_truth_resolutions:
+            all_keys = set()
+            flat_resolutions = []
+            for r in self.ground_truth_resolutions:
+                flat = {}
+                for k, v in r.items():
+                    if isinstance(v, (dict, list)):
+                        flat[k] = json.dumps(v, default=str) if v else ""
+                    else:
+                        flat[k] = v
+                    all_keys.add(k)
+                flat_resolutions.append(flat)
+
+            fieldnames = sorted(all_keys)
+            with open(gt_path / "alert_resolutions.csv", "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
+                writer.writeheader()
+                writer.writerows(flat_resolutions)
+
         # Evaluation guide
         evaluation_guide = self._build_evaluation_guide()
         with open(gt_path / "evaluation_guide.json", "w") as f:
             json.dump(evaluation_guide, f, indent=2, default=str)
+
+        # FP investigation playbooks summary
+        fp_playbooks = build_fp_investigation_playbooks_summary(self.ground_truth_resolutions)
+        with open(gt_path / "fp_investigation_playbooks.json", "w") as f:
+            json.dump(fp_playbooks, f, indent=2, default=str)
 
         print(f"\nTMS output saved to: {output_path}")
         print(f"  Alerts: {alerts_path} ({len(self.alert_packages)} alert packages)")
@@ -1205,6 +1223,9 @@ class TMSAlertGenerator:
 
         closed_ts = created_ts + timedelta(days=investigation_days)
 
+        # FP enrichment fields (set in FP branch, empty for TP)
+        fp_enrichment = {}
+
         # Determine disposition
         if is_tp:
             if risk_level == "CRITICAL":
@@ -1232,6 +1253,13 @@ class TMSAlertGenerator:
             sar_filed = False
             final_status = "CLOSED_NO_ISSUE"
 
+            # Select FP category and build enrichment fields
+            fp_cat = select_fp_category(
+                alert_type=alert.get("alert_type", "volume_anomaly"),
+                disposition=disposition,
+            )
+            fp_enrichment = fp_cat.to_ground_truth_fields()
+
         # Generate investigation note
         note_data = {
             "alert_id": alert.get("alert_id", ""),
@@ -1257,7 +1285,8 @@ class TMSAlertGenerator:
             typology=typology,
         )
 
-        return {
+        # Build result with base fields
+        result = {
             "alert_id": alert.get("alert_id", ""),
             "is_true_positive": is_tp,
             "typology": typology,
@@ -1276,7 +1305,21 @@ class TMSAlertGenerator:
             "alert_type": alert.get("alert_type", ""),
             "account_id": alert.get("account_id", ""),
             "customer_id": alert.get("customer_id", ""),
+            # FP taxonomy enrichment fields (non-null for FP alerts only)
+            "fp_category": None,
+            "fp_flag_reason": None,
+            "fp_legitimate_explanation": None,
+            "fp_evidence_datasets": None,
+            "fp_investigation_playbook": None,
+            "fp_resolution_criteria": None,
+            "fp_benign_trigger_type": None,
         }
+
+        # Merge FP enrichment fields for false positive alerts
+        if not is_tp and fp_enrichment:
+            result.update(fp_enrichment)
+
+        return result
 
     def _build_summary(
         self,
