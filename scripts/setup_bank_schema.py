@@ -20,7 +20,7 @@ def setup_schema():
     import psycopg2
 
     # Connection parameters
-    host = "${POSTGRES_HOST:-your-rds-instance.region.rds.amazonaws.com}"
+    host = os.environ.get('POSTGRES_HOST', 'your-rds-instance.region.rds.amazonaws.com')
     port = 5432
     database = "postgres"
     username = "postgres"
@@ -69,6 +69,7 @@ def setup_schema():
         tables_to_drop = [
             'CorridorAnalysis', 'CounterpartyProfile', 'NetworkMetrics',
             'CustomerRiskProfile', 'TransactionAggregation', 'AccountSignals',
+            'AlertResolution', 'FPCategoryReference', 'TMSDataset', 'AlertTransaction',
             'Alert', 'NewsEvent', 'CustomerRelationship', 'Transaction',
             'Counterparty', 'AccountOwnership', 'Account', 'CustomerIdentifier',
             'CustomerAddress', 'CompanyOfficer', 'CustomerCompany', 'CustomerPerson', 'Customer'
@@ -98,7 +99,8 @@ def setup_schema():
             'txn_direction_enum', 'txn_type_enum', 'txn_channel_enum', 'counterparty_type_enum',
             'relationship_type_enum', 'news_category_enum', 'severity_enum',
             'source_credibility_enum', 'news_status_enum', 'alert_status_enum',
-            'disposition_reason_enum', 'period_type_enum', 'entity_type_enum'
+            'disposition_reason_enum', 'period_type_enum', 'entity_type_enum',
+            'tms_disposition_enum', 'tms_final_status_enum'
         ]
 
         for enum_type in enum_types:

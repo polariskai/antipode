@@ -14,6 +14,10 @@ DROP TABLE IF EXISTS NetworkMetrics CASCADE;
 DROP TABLE IF EXISTS CustomerRiskProfile CASCADE;
 DROP TABLE IF EXISTS TransactionAggregation CASCADE;
 DROP TABLE IF EXISTS AccountSignals CASCADE;
+DROP TABLE IF EXISTS AlertResolution CASCADE;
+DROP TABLE IF EXISTS FPCategoryReference CASCADE;
+DROP TABLE IF EXISTS TMSDataset CASCADE;
+DROP TABLE IF EXISTS AlertTransaction CASCADE;
 DROP TABLE IF EXISTS Alert CASCADE;
 DROP TABLE IF EXISTS NewsEvent CASCADE;
 DROP TABLE IF EXISTS CustomerRelationship CASCADE;
@@ -63,6 +67,13 @@ CREATE TYPE alert_status_enum AS ENUM ('NEW', 'IN_PROGRESS', 'ESCALATED', 'CLOSE
 CREATE TYPE disposition_reason_enum AS ENUM ('LEGITIMATE_ACTIVITY', 'INSUFFICIENT_EVIDENCE', 'CONFIRMED_SUSPICIOUS', 'CUSTOMER_EXPLAINED', 'DUPLICATE');
 CREATE TYPE period_type_enum AS ENUM ('DAILY', 'WEEKLY', 'MONTHLY');
 CREATE TYPE entity_type_enum AS ENUM ('CUSTOMER', 'ACCOUNT', 'COUNTERPARTY');
+CREATE TYPE tms_disposition_enum AS ENUM (
+    'FALSE_POSITIVE', 'NORMAL_BUSINESS', 'CUSTOMER_EXPLAINED',
+    'INSUFFICIENT_INFO', 'SUSPICIOUS_ACTIVITY', 'CONFIRMED_FRAUD'
+);
+CREATE TYPE tms_final_status_enum AS ENUM (
+    'CLOSED_NO_ISSUE', 'ESCALATED', 'SAR_FILED'
+);
 
 -- ============================================================================
 -- RAW TABLES
@@ -448,7 +459,21 @@ CREATE TABLE Alert (
     narrative TEXT,
     sar_filed BOOLEAN DEFAULT FALSE,
     sar_filing_date DATE,
-    scenario_id VARCHAR(36)
+    scenario_id VARCHAR(36),
+
+    -- TMS-specific columns
+    rule_id VARCHAR(50),
+    rule_name VARCHAR(200),
+    amount_involved DECIMAL(18,2),
+    lookback_start DATE,
+    lookback_end DATE,
+
+    -- Ground truth (synthetic labels, prefixed with _ in source)
+    _true_positive BOOLEAN,
+    _typology VARCHAR(100),
+
+    -- TMS dataset linkage
+    tms_dataset_id VARCHAR(50)
 );
 
 CREATE INDEX idx_alert_account ON Alert(account_id);
@@ -475,6 +500,91 @@ CREATE INDEX idx_alert_txn_alert ON AlertTransaction(alert_id);
 CREATE INDEX idx_alert_txn_txn ON AlertTransaction(txn_id);
 
 COMMENT ON TABLE AlertTransaction IS 'Junction table linking alerts to their triggering/supporting transactions';
+
+-- R15. AlertResolution (Investigation lifecycle + FP taxonomy enrichment)
+-- ============================================================================
+CREATE TABLE AlertResolution (
+    resolution_id VARCHAR(36) PRIMARY KEY,
+    alert_id VARCHAR(36) NOT NULL REFERENCES Alert(alert_id) ON DELETE CASCADE,
+    is_true_positive BOOLEAN NOT NULL,
+    typology VARCHAR(100),
+    scenario_id VARCHAR(50),
+    disposition tms_disposition_enum NOT NULL,
+    final_status tms_final_status_enum NOT NULL,
+    assigned_analyst VARCHAR(50),
+    investigation_started TIMESTAMP,
+    investigation_closed TIMESTAMP,
+    investigation_days INTEGER,
+    sar_filed BOOLEAN DEFAULT FALSE,
+    sar_id VARCHAR(50),
+    investigation_notes TEXT,
+    risk_level severity_enum,
+    score DECIMAL(5,2),
+
+    -- FP taxonomy enrichment fields
+    fp_category VARCHAR(50),
+    fp_flag_reason TEXT,
+    fp_legitimate_explanation TEXT,
+    fp_evidence_datasets JSONB,
+    fp_investigation_playbook JSONB,
+    fp_resolution_criteria TEXT,
+    fp_benign_trigger_type VARCHAR(100),
+
+    tms_dataset_id VARCHAR(50),
+    UNIQUE(alert_id)
+);
+
+CREATE INDEX idx_resolution_alert ON AlertResolution(alert_id);
+CREATE INDEX idx_resolution_disposition ON AlertResolution(disposition);
+CREATE INDEX idx_resolution_tp ON AlertResolution(is_true_positive);
+CREATE INDEX idx_resolution_fp_category ON AlertResolution(fp_category);
+CREATE INDEX idx_resolution_dataset ON AlertResolution(tms_dataset_id);
+
+COMMENT ON TABLE AlertResolution IS 'Investigation lifecycle and FP taxonomy enrichment from TMS pipeline';
+
+-- R16. FPCategoryReference (Lookup table for 28 FP categories)
+-- ============================================================================
+CREATE TABLE FPCategoryReference (
+    category_id VARCHAR(50) PRIMARY KEY,
+    alert_type VARCHAR(100) NOT NULL,
+    triggering_rule VARCHAR(50),
+    triggering_signals JSONB,
+    flag_reason TEXT NOT NULL,
+    legitimate_explanation TEXT NOT NULL,
+    applicable_dispositions JSONB,
+    benign_trigger_type VARCHAR(100),
+    evidence_datasets JSONB NOT NULL,
+    investigation_steps JSONB NOT NULL,
+    resolution_criteria TEXT NOT NULL,
+    weight DECIMAL(3,1) DEFAULT 1.0
+);
+
+CREATE INDEX idx_fp_ref_alert_type ON FPCategoryReference(alert_type);
+
+COMMENT ON TABLE FPCategoryReference IS 'Reference taxonomy of 28 false-positive categories across 12 alert types';
+
+-- R17. TMSDataset (Tracks each TMS generation run)
+-- ============================================================================
+CREATE TABLE TMSDataset (
+    dataset_id VARCHAR(50) PRIMARY KEY,
+    generated_at TIMESTAMP NOT NULL,
+    total_alerts INTEGER,
+    true_positives INTEGER,
+    false_positives INTEGER,
+    fp_rate DECIMAL(5,4),
+    target_fp_rate DECIMAL(5,4),
+    entity_count INTEGER,
+    account_count INTEGER,
+    transaction_count INTEGER,
+    sar_filings INTEGER,
+    avg_investigation_days DECIMAL(5,1),
+    risk_distribution JSONB,
+    alert_type_distribution JSONB,
+    disposition_distribution JSONB,
+    loaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE TMSDataset IS 'Metadata for each TMS alert generation run';
 
 -- ============================================================================
 -- DERIVED TABLES (Analytics Layer)
